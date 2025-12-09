@@ -3,8 +3,7 @@
 # -------------------------
 
 from telegram.ext import Updater, MessageHandler
-from telegram.ext.filters import BaseFilter
-from telegram import filters
+from telegram import ext
 import re
 import requests
 from bs4 import BeautifulSoup 
@@ -17,7 +16,7 @@ MI_NUMERO = "+54 9 2235385001"
 TELEGRAM_BOT_TOKEN = '8586713628:AAFm9sVd_aysUs3cmux9dOkiWQZK6U152Vc'
 LINK_PRUEBA = "https://cabrerapropmdq.com/apartamento-venta-centro-mar-del-plata/9627731?shared=whatsapp" 
 PATRON_TELEFONO = r'(?:\+\d{1,3}\s?\d{2,4}\s?[\s\d]{4}[-\s]?\d{4,6})|(?:\d{3,5}[-\s]?\d{4}[-\s]?\d{4})'
-PATRON_LIMPIEZA_CONTACTO_FINAL = r'(?:Contáctanos Cabrera Propiedades.*|Escribania designada:.*)'
+PATRON_LIMPIEZA_CONTACTO = r'(?:Contáctanos Cabrera Propiedades.*|Escribania designada:.*)'
 
 def generar_ficha_desde_enlace(enlace_ficha):
     print("-" * 50)
@@ -98,7 +97,7 @@ def handle_message(update, context):
 if __name__ == "__main__":
     updater = Updater(TELEGRAM_BOT_TOKEN, use_context=True)
     dp = updater.dispatcher
-    dp.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
+    dp.add_handler(MessageHandler(ext.filters.TEXT & ~ext.filters.COMMAND, handle_message))
     print("🤖 Bot de Telegram iniciado y esperando mensajes...")
     updater.start_polling() 
     updater.idle()
