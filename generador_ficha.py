@@ -24,14 +24,14 @@ PATRON_TELEFONO = r'(?:\+\d{1,3}\s?\d{2,4}\s?[\s\d]{4}[-\s]?\d{4,6})|(?:\d{3,5}[
 PATRON_LIMPIEZA_CONTACTO = r'Contáctanos Cabrera Propiedades.*'
 PATRON_LIMPIEZA_CONTACTO = r'Escribania designada:.*'
 
-def generar_ficha_desde_enlace():
+def generar_ficha_desde_enlace(enlace_ficha): # Debe aceptar un argumento
     print("-" * 50)
-    print(f"Iniciando Web Scraping en: {LINK_PRUEBA}")
+    print(f"Iniciando Web Scraping en: {enlace_ficha}")
     print("-" * 50)
 
     try:
         headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/91.0.4472.124 Safari/537.36'}
-        response = requests.get(LINK_PRUEBA, headers=headers)
+        response = requests.get(enlace_ficha, headers=headers)
         response.raise_for_status() 
         sopa = BeautifulSoup(response.text, 'html.parser')
         
@@ -49,15 +49,19 @@ def generar_ficha_desde_enlace():
             texto_de_la_ficha = sopa.find('body').get_text(separator=' ', strip=True)
             print("⚠️ Advertencia: Usando texto completo del cuerpo.")
             
+    # ... (Bloque try) ...
     except requests.exceptions.RequestException as e:
-        print(f"❌ Error: {e}")
-        return
-    
+        error_msg = f"❌ Error de red al acceder a la ficha: {e}" # <--- 4 espacios extra
+        print(error_msg) # <--- 4 espacios extra
+        return error_msg # Retorna un mensaje de error
+
     numeros_encontrados = re.findall(PATRON_TELEFONO, texto_de_la_ficha)
 
     if not numeros_encontrados:
-        print("\n✅ No se encontraron números.")
-        return
+        mensaje_no_numeros = "\n✅ No se encontraron números. Ficha procesada sin cambios."
+        print(mensaje_no_numeros)
+    # Retorna el texto original para que el usuario tenga la ficha
+        return texto_de_la_ficha + mensaje_no_numeros
 
     print("\n" + "=" * 50)
     print(f"⚠️ CONTROL: Números encontrados:")
@@ -86,6 +90,7 @@ def generar_ficha_desde_enlace():
         print("=" * 50)
         print(texto_modificado_limpio) # <-- AHORA IMPRIME LA VERSION LIMPIA
         print("=" * 50)
+        return texto_modificado_limpio
     else:
         print("\n❌ Cancelado.")
 
