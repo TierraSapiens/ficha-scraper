@@ -69,7 +69,7 @@ def generar_ficha_desde_enlace(enlace_ficha):
         if "Buscar Departamento" in texto_modificado:
             texto_modificado = texto_modificado.split("Buscar Departamento")[-1]
             texto_modificado = "Departamento" + texto_modificado
-            texto_modificado_limpio = re.sub(PATRON_LIMPIEZA_CONTACTO_FINAL, "", texto_modificado, flags=re.DOTALL | re.IGNORECASE)
+            texto_modificado_limpio = re.sub(PATRON_LIMPIEZA_CONTACTO, "", texto_modificado, flags=re.DOTALL | re.IGNORECASE)
 
         print("\n🎉 Publicación Modificada (Copia y Pega):")
         print("=" * 50)
