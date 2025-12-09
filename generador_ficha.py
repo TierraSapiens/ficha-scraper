@@ -84,26 +84,37 @@ def generar_ficha_desde_enlace(enlace_ficha):
         return "❌ Procesamiento cancelado." # Retornar mensaje en caso de cancelación
 
 # ----------------------------------------------------
-# NUEVA FUNCIÓN PRINCIPAL PARA TELEGRAM (VERSIÓN ASÍNCRONA v20+)
+# NUEVA FUNCIÓN PRINCIPAL PARA TELEGRAM (CON MEJOR CONTROL)
 # ----------------------------------------------------
 
 async def handle_message(update, context):
     """Maneja los mensajes entrantes, busca enlaces y procesa."""
     mensaje_recibido = update.message.text
     
-    # Comprobación básica
-    if "cabrerapropmdq.com" in mensaje_recibido:
-        print(f"🤖 Procesando enlace: {mensaje_recibido}")
+    # 1. Extracción y Verificación de Enlace
+    # Intentamos encontrar la URL completa. Esto ayuda a limpiar cualquier texto extra.
+    match = re.search(r'https?://cabrerapropmdq\.com/[\w\d\-]+/\d+', mensaje_recibido)
+
+    if match:
+        enlace_limpio = match.group(0)
+        print(f"🤖 Procesando enlace: {enlace_limpio}")
         
-        # Ejecutamos tu función de scraping (es síncrona, pero funcionará bien para esto)
-        ficha_procesada = generar_ficha_desde_enlace(mensaje_recibido)
-        
-        # IMPORTANTE: Usamos 'await' para enviar la respuesta
-        await update.message.reply_text(ficha_procesada)
-        
+        try:
+            # 2. Ejecutar la función de scraping
+            ficha_procesada = generar_ficha_desde_enlace(enlace_limpio)
+            
+            # 3. Responder al usuario
+            await update.message.reply_text(ficha_procesada)
+            
+        except Exception as e:
+            # Si el scraping falla por razones internas (BS4, Regex, etc.)
+            error_msg = f"❌ ¡ERROR DE PROCESAMIENTO INTERNO! Detalle: {e}"
+            print(error_msg)
+            await update.message.reply_text(error_msg)
+            
     else:
-        # IMPORTANTE: Usamos 'await' aquí también
-        await update.message.reply_text("👋 Hola! Por favor, envíame el enlace completo de la ficha de cabrerapropmdq.com")
+        # 4. Respuesta si no se encuentra un enlace válido
+        await update.message.reply_text("👋 Hola! Por favor, envíame el **enlace completo** de una ficha (debe contener cabrerapropmdq.com).")
 
 if __name__ == "__main__":
     print("🤖 Iniciando Bot (Modo Application v20+)...")
