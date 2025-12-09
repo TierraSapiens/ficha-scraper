@@ -41,8 +41,12 @@ def generar_ficha_desde_enlace(enlace_ficha):
             print(f"✅ Título encontrado: {titulo}")
             print("✅ Descripción extraída con éxito.")
         else:
-            texto_de_la_ficha = sopa.find('body').get_text(separator=' ', strip=True)
-            print("⚠️ Advertencia: Usando texto completo del cuerpo.")
+            # --- CAMBIO CRÍTICO AQUÍ ---
+            # Si falla en encontrar el ARTICLE, usamos el texto completo del cuerpo HTML.
+            print("⚠️ Advertencia: Elementos clave no encontrados. Usando texto completo del cuerpo.")
+            # Usamos un elemento más grande que sabemos que contiene texto (la sección principal)
+            main_content = sopa.find('div', class_='page-content') or sopa.find('body')
+            texto_de_la_ficha = main_content.get_text(separator=' ', strip=True) if main_content else sopa.get_text(separator=' ', strip=True)    
             
 # ... (Bloque try) ...
     except requests.exceptions.RequestException as e:
@@ -52,10 +56,10 @@ def generar_ficha_desde_enlace(enlace_ficha):
 
     numeros_encontrados = re.findall(PATRON_TELEFONO, texto_de_la_ficha)
 
-    if not numeros_encontrados:
-        mensaje_no_numeros = "\n✅ No se encontraron números. Ficha procesada sin cambios."
-        print(mensaje_no_numeros)
-        return texto_de_la_ficha + mensaje_no_numeros
+    #if not numeros_encontrados:
+     #   mensaje_no_numeros = "\n✅ No se encontraron números. Ficha procesada sin cambios."
+     #   print(mensaje_no_numeros)
+     #   return texto_de_la_ficha + mensaje_no_numeros
     print("\n" + "=" * 50)
     print(f"⚠️ CONTROL: Números encontrados:")
     numeros_unicos = sorted(list(set(n.strip() for n in numeros_encontrados if n.strip())))
@@ -72,9 +76,6 @@ def generar_ficha_desde_enlace(enlace_ficha):
         if "Buscar Departamento" in texto_modificado:
             texto_modificado = texto_modificado.split("Buscar Departamento")[-1]
             texto_modificado = "Departamento" + texto_modificado
-        
-        # ✅ CORRECCIÓN: Esta línea de limpieza se ejecuta siempre,
-        # asegurando que texto_modificado_limpio exista.
         texto_modificado_limpio = re.sub(PATRON_LIMPIEZA_CONTACTO, "", texto_modificado, flags=re.DOTALL | re.IGNORECASE)
 
         print("\n🎉 Publicación Modificada (Copia y Pega):")
