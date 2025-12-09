@@ -60,8 +60,9 @@ def generar_ficha_desde_enlace():
         print(f"- {num}")
     print("=" * 50)
 
-    confirmacion = input(f"¿Reemplazar por {MI_NUMERO}? (S/N): ").upper()
-
+    # confirmacion = input(f"¿Reemplazar por {MI_NUMERO}? (S/N): ").upper()
+    confirmacion = 'S'
+    
     if confirmacion == 'S':
         # 3. Automatización: Reemplazo
         texto_modificado = re.sub(PATRON_TELEFONO, MI_NUMERO, texto_de_la_ficha)
