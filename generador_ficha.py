@@ -1,14 +1,18 @@
 #--------------------------
 # Generador ficha V 1.1
 # -------------------------
+
+from telegram.ext import Updater, MessageHandler, Filters
 import re
 import requests
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup 
+import sys
 
 # ----------------------------------------------------------------------
 # Configuracion del Usuario
 # ----------------------------------------------------------------------
 MI_NUMERO = "+54 9 2235385001"
+TELEGRAM_BOT_TOKEN = '8586713628:AAFm9sVd_aysUs3cmux9dOkiWQZK6U152Vc'
 LINK_PRUEBA = "https://cabrerapropmdq.com/apartamento-venta-centro-mar-del-plata/9627731?shared=whatsapp" 
 
 # Regex estricto para evitar IDs (requiere al menos prefijo o formato largo)
@@ -83,5 +87,40 @@ def generar_ficha_desde_enlace():
     else:
         print("\n❌ Cancelado.")
 
+# ----------------------------------------------------
+# NUEVA FUNCIÓN PRINCIPAL PARA TELEGRAM
+# ----------------------------------------------------
+
+def handle_message(update, context):
+    """Maneja los mensajes entrantes, busca enlaces y procesa."""
+    mensaje_recibido = update.message.text
+
+    # Comprobación de seguridad/lógica: ¿Es un enlace de la inmobiliaria?
+    if "cabrerapropmdq.com" in mensaje_recibido:
+
+        # 1. Llamar a tu función principal para hacer el scraping
+        print(f"🤖 Procesando enlace: {mensaje_recibido}")
+        ficha_procesada = generar_ficha_desde_enlace(mensaje_recibido)
+
+        # 2. Enviar la respuesta de vuelta por Telegram
+        update.message.reply_text(ficha_procesada)
+
+    else:
+        # Respuesta si el mensaje no contiene un enlace válido
+        update.message.reply_text("👋 Hola! Por favor, envíame el enlace completo de la ficha de cabrerapropmdq.com para que pueda procesar la publicación.")
+
+
 if __name__ == "__main__":
-    generar_ficha_desde_enlace()
+    # 1. Iniciar el bot con el Token
+    # Usamos el modo Updater/Long Polling (ideal para Railway Worker)
+    updater = Updater(TELEGRAM_BOT_TOKEN, use_context=True)
+    dp = updater.dispatcher
+
+    # 2. Añadir el manejador de mensajes de texto (filtra todos los mensajes que no son comandos)
+    dp.add_handler(MessageHandler(Filters.text & ~Filters.command, handle_message))
+
+    # 3. Iniciar el bot y el ciclo de escucha
+    print("🤖 Bot de Telegram iniciado y esperando mensajes...")
+    # start_polling hace que el proceso se quede "escuchando", evitando el crash
+    updater.start_polling() 
+    updater.idle() # Mantiene el proceso vivo
