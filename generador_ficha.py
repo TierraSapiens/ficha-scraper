@@ -2,7 +2,9 @@
 # Generador ficha V 1.1
 # -------------------------
 
-from telegram.ext import Updater, MessageHandler, Filters
+from telegram.ext import Updater, MessageHandler
+from telegram.ext.filters import BaseFilter
+from telegram import filters
 import re
 import requests
 from bs4 import BeautifulSoup 
@@ -117,7 +119,7 @@ if __name__ == "__main__":
     dp = updater.dispatcher
 
     # 2. Añadir el manejador de mensajes de texto (filtra todos los mensajes que no son comandos)
-    dp.add_handler(MessageHandler(Filters.text & ~Filters.command, handle_message))
+    dp.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 
     # 3. Iniciar el bot y el ciclo de escucha
     print("🤖 Bot de Telegram iniciado y esperando mensajes...")
