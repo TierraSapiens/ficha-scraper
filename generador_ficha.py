@@ -1,9 +1,7 @@
 #--------------------------
 # Generador ficha V 1.1
 # -------------------------
-
-from telegram.ext import Updater, MessageHandler
-from telegram import ext
+from telegram.ext import Application, MessageHandler, filters
 import re
 import requests
 from bs4 import BeautifulSoup 
@@ -80,24 +78,36 @@ def generar_ficha_desde_enlace(enlace_ficha):
         print("\n❌ Cancelado.")
 
 # ----------------------------------------------------
-# NUEVA FUNCIÓN PRINCIPAL PARA TELEGRAM
+# NUEVA FUNCIÓN PRINCIPAL PARA TELEGRAM (VERSIÓN ASÍNCRONA v20+)
 # ----------------------------------------------------
 
-def handle_message(update, context):
+async def handle_message(update, context):
     """Maneja los mensajes entrantes, busca enlaces y procesa."""
     mensaje_recibido = update.message.text
+    
+    # Comprobación básica
     if "cabrerapropmdq.com" in mensaje_recibido:
         print(f"🤖 Procesando enlace: {mensaje_recibido}")
+        
+        # Ejecutamos tu función de scraping (es síncrona, pero funcionará bien para esto)
         ficha_procesada = generar_ficha_desde_enlace(mensaje_recibido)
-        update.message.reply_text(ficha_procesada)
+        
+        # IMPORTANTE: Usamos 'await' para enviar la respuesta
+        await update.message.reply_text(ficha_procesada)
+        
     else:
-        update.message.reply_text("👋 Hola! Por favor, envíame el enlace completo de la ficha de cabrerapropmdq.com para que pueda procesar la publicación.")
-
+        # IMPORTANTE: Usamos 'await' aquí también
+        await update.message.reply_text("👋 Hola! Por favor, envíame el enlace completo de la ficha de cabrerapropmdq.com")
 
 if __name__ == "__main__":
-    updater = Updater(TELEGRAM_BOT_TOKEN)
-    dp = updater.dispatcher
-    dp.add_handler(MessageHandler(ext.filters.TEXT & ~ext.filters.COMMAND, handle_message))
-    print("🤖 Bot de Telegram iniciado y esperando mensajes...")
-    updater.start_polling() 
-    updater.idle()
+    print("🤖 Iniciando Bot (Modo Application v20+)...")
+    
+    # 1. Construir la Aplicación con el Builder
+    application = Application.builder().token(TELEGRAM_BOT_TOKEN).build()
+
+    # 2. Añadir el manejador (Filtros actualizados)
+    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
+
+    # 3. Iniciar el bot (run_polling se encarga de todo, no hace falta idle)
+    print("🚀 Bot escuchando...")
+    application.run_polling()
