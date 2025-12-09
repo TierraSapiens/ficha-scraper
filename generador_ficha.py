@@ -95,7 +95,7 @@ def handle_message(update, context):
 
 
 if __name__ == "__main__":
-    updater = Updater(TELEGRAM_BOT_TOKEN, use_context=True)
+    updater = Updater(TELEGRAM_BOT_TOKEN)
     dp = updater.dispatcher
     dp.add_handler(MessageHandler(ext.filters.TEXT & ~ext.filters.COMMAND, handle_message))
     print("🤖 Bot de Telegram iniciado y esperando mensajes...")
