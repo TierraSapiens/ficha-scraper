@@ -64,10 +64,15 @@ def generar_ficha_desde_enlace(enlace_ficha):
     if confirmacion == 'S':
 
         texto_modificado = re.sub(PATRON_TELEFONO, MI_NUMERO, texto_de_la_ficha)
+        
+        # Lógica de corte (solo si existe la frase)
         if "Buscar Departamento" in texto_modificado:
             texto_modificado = texto_modificado.split("Buscar Departamento")[-1]
             texto_modificado = "Departamento" + texto_modificado
-            texto_modificado_limpio = re.sub(PATRON_LIMPIEZA_CONTACTO, "", texto_modificado, flags=re.DOTALL | re.IGNORECASE)
+        
+        # ✅ CORRECCIÓN: Esta línea de limpieza se ejecuta siempre,
+        # asegurando que texto_modificado_limpio exista.
+        texto_modificado_limpio = re.sub(PATRON_LIMPIEZA_CONTACTO, "", texto_modificado, flags=re.DOTALL | re.IGNORECASE)
 
         print("\n🎉 Publicación Modificada (Copia y Pega):")
         print("=" * 50)
@@ -76,6 +81,7 @@ def generar_ficha_desde_enlace(enlace_ficha):
         return texto_modificado_limpio
     else:
         print("\n❌ Cancelado.")
+        return "❌ Procesamiento cancelado." # Retornar mensaje en caso de cancelación
 
 # ----------------------------------------------------
 # NUEVA FUNCIÓN PRINCIPAL PARA TELEGRAM (VERSIÓN ASÍNCRONA v20+)
