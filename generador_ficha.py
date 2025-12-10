@@ -14,7 +14,7 @@ MI_NUMERO = "+54 9 2235385001"
 TELEGRAM_BOT_TOKEN = '8586713628:AAFm9sVd_aysUs3cmux9dOkiWQZK6U152Vc'
 LINK_PRUEBA = "https://cabrerapropmdq.com/apartamento-venta-centro-mar-del-plata/9627731?shared=whatsapp" 
 PATRON_TELEFONO = r'(?:\+\d{1,3}\s?\d{2,4}\s?[\s\d]{4}[-\s]?\d{4,6})|(?:\d{3,5}[-\s]?\d{4}[-\s]?\d{4})'
-PATRON_LIMPIEZA_CONTACTO = r'(?:Buscar Casa moderna.*Compartir)|(?:-Las medidas indicadas.*view)'
+PATRON_LIMPIEZA_CONTACTO = r'(?:Inicio Ventas Campo \(1\).*Buscar por:)|(?:Contáctanos Cabrera Propiedades.*wasi\.co)|(?:Ofertar\s*×\s*Ofertar\s*×)'
 
 def generar_ficha_desde_enlace(enlace_ficha):
     print("-" * 50)
