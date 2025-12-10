@@ -7,14 +7,14 @@ import requests
 from bs4 import BeautifulSoup 
 import sys
 
-# ----------------------------------------------------------------------
+# --------------------------
 # Configuracion del Usuario
-# ----------------------------------------------------------------------
+# --------------------------
 MI_NUMERO = "+54 9 2235385001"
 TELEGRAM_BOT_TOKEN = '8586713628:AAFm9sVd_aysUs3cmux9dOkiWQZK6U152Vc'
 LINK_PRUEBA = "https://cabrerapropmdq.com/apartamento-venta-centro-mar-del-plata/9627731?shared=whatsapp" 
 PATRON_TELEFONO = r'(?:\+\d{1,3}\s?\d{2,4}\s?[\s\d]{4}[-\s]?\d{4,6})|(?:\d{3,5}[-\s]?\d{4}[-\s]?\d{4})'
-PATRON_LIMPIEZA_CONTACTO = r'(?:Contáctanos Cabrera Propiedades.*|Escribania designada:.*)'
+PATRON_LIMPIEZA_CONTACTO = r'(?:Inicio Ventas Campo \(1\).*Buscar Menú Buscar por:|Contáctanos Cabrera Propiedades.*|Escribania designada:.*)'
 
 def generar_ficha_desde_enlace(enlace_ficha):
     print("-" * 50)
@@ -41,14 +41,10 @@ def generar_ficha_desde_enlace(enlace_ficha):
             print(f"✅ Título encontrado: {titulo}")
             print("✅ Descripción extraída con éxito.")
         else:
-            # --- CAMBIO CRÍTICO AQUÍ ---
-            # Si falla en encontrar el ARTICLE, usamos el texto completo del cuerpo HTML.
             print("⚠️ Advertencia: Elementos clave no encontrados. Usando texto completo del cuerpo.")
-            # Usamos un elemento más grande que sabemos que contiene texto (la sección principal)
             main_content = sopa.find('div', class_='page-content') or sopa.find('body')
             texto_de_la_ficha = main_content.get_text(separator=' ', strip=True) if main_content else sopa.get_text(separator=' ', strip=True)    
             
-# ... (Bloque try) ...
     except requests.exceptions.RequestException as e:
         error_msg = f"❌ Error de red al acceder a la ficha: {e}"
         print(error_msg)
@@ -71,8 +67,6 @@ def generar_ficha_desde_enlace(enlace_ficha):
     if confirmacion == 'S':
 
         texto_modificado = re.sub(PATRON_TELEFONO, MI_NUMERO, texto_de_la_ficha)
-        
-        # Lógica de corte (solo si existe la frase)
         if "Buscar Departamento" in texto_modificado:
             texto_modificado = texto_modificado.split("Buscar Departamento")[-1]
             texto_modificado = "Departamento" + texto_modificado
@@ -85,18 +79,15 @@ def generar_ficha_desde_enlace(enlace_ficha):
         return texto_modificado_limpio
     else:
         print("\n❌ Cancelado.")
-        return "❌ Procesamiento cancelado." # Retornar mensaje en caso de cancelación
+        return "❌ Procesamiento cancelado."
 
-# ----------------------------------------------------
-# NUEVA FUNCIÓN PRINCIPAL PARA TELEGRAM (CON MEJOR CONTROL)
-# ----------------------------------------------------
+# ----------------------
+#FUNCIÓN PARA TELEGRAM
+# ----------------------
 
 async def handle_message(update, context):
     """Maneja los mensajes entrantes, busca enlaces y procesa."""
     mensaje_recibido = update.message.text
-    
-    # 1. Extracción y Verificación de Enlace
-    # Intentamos encontrar la URL completa. Esto ayuda a limpiar cualquier texto extra.
     match = re.search(r'https?://cabrerapropmdq\.com/[\w\d\-]+/\d+', mensaje_recibido)
 
     if match:
@@ -104,31 +95,20 @@ async def handle_message(update, context):
         print(f"🤖 Procesando enlace: {enlace_limpio}")
         
         try:
-            # 2. Ejecutar la función de scraping
             ficha_procesada = generar_ficha_desde_enlace(enlace_limpio)
-            
-            # 3. Responder al usuario
             await update.message.reply_text(ficha_procesada)
             
         except Exception as e:
-            # Si el scraping falla por razones internas (BS4, Regex, etc.)
             error_msg = f"❌ ¡ERROR DE PROCESAMIENTO INTERNO! Detalle: {e}"
             print(error_msg)
             await update.message.reply_text(error_msg)
             
     else:
-        # 4. Respuesta si no se encuentra un enlace válido
         await update.message.reply_text("👋 Hola! Por favor, envíame el **enlace completo** de una ficha (debe contener cabrerapropmdq.com).")
 
 if __name__ == "__main__":
     print("🤖 Iniciando Bot (Modo Application v20+)...")
-    
-    # 1. Construir la Aplicación con el Builder
     application = Application.builder().token(TELEGRAM_BOT_TOKEN).build()
-
-    # 2. Añadir el manejador (Filtros actualizados)
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
-
-    # 3. Iniciar el bot (run_polling se encarga de todo, no hace falta idle)
     print("🚀 Bot escuchando...")
     application.run_polling()
